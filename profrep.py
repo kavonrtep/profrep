@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-import numpy as np
 import subprocess
 import csv
 import time
 import sys
 import matplotlib
-matplotlib.use("PDF")
+# matplotlib.use("PDF")
+matplotlib.use("pdf")
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
@@ -19,8 +19,6 @@ from tempfile import NamedTemporaryFile
 from operator import itemgetter
 from itertools import groupby
 import gff
-import protein_domains
-import domains_filtering
 import configuration
 import visualization
 import distutils
@@ -33,9 +31,12 @@ import pickle
 import shutil
 import warnings
 import random
+import numpy as np
+import dante_gff_output_filtering as domains_filtering
+import dante as protein_domains
 
 t_profrep = time.time()
-np.set_printoptions(threshold=np.nan)
+np.set_printoptions(threshold=sys.maxsize)
 warnings.filterwarnings("ignore", module="matplotlib")
 
 
@@ -59,24 +60,27 @@ class Range():
 
 
 def get_version(path):
-    branch = subprocess.check_output("git rev-parse --abbrev-ref HEAD",
-                                     shell=True,
-                                     cwd=path).decode('ascii').strip()
-    shorthash = subprocess.check_output("git log --pretty=format:'%h' -n 1  ",
-                                        shell=True,
-                                        cwd=path).decode('ascii').strip()
-    revcount = len(subprocess.check_output("git log --oneline",
-                                           shell=True,
-                                           cwd=path).decode('ascii').split())
-    version_string = ("-------------------------------------"
-                      "-------------------------------------\n"
-                      "PIPELINE VERSION         : "
-                      "{branch}-rv-{revcount}({shorthash})\n"
-                      "-------------------------------------"
-                      "-------------------------------------\n").format(
-                          branch=branch,
-                          shorthash=shorthash,
-                          revcount=revcount, )
+    try:
+        branch = subprocess.check_output("git rev-parse --abbrev-ref HEAD",
+                                         shell=True,
+                                         cwd=path).decode('ascii').strip()
+        shorthash = subprocess.check_output("git log --pretty=format:'%h' -n 1  ",
+                                            shell=True,
+                                            cwd=path).decode('ascii').strip()
+        revcount = len(subprocess.check_output("git log --oneline",
+                                               shell=True,
+                                               cwd=path).decode('ascii').split())
+        version_string = ("-------------------------------------"
+                          "-------------------------------------\n"
+                          "PIPELINE VERSION         : "
+                          "{branch}-rv-{revcount}({shorthash})\n"
+                          "-------------------------------------"
+                          "-------------------------------------\n").format(
+                              branch=branch,
+                              shorthash=shorthash,
+                              revcount=revcount, )
+    except:
+        version_string = ""
     return (version_string)
 
 
@@ -427,6 +431,9 @@ def repeats_process_dom(OUTPUT_GFF, THRESHOLD, THRESHOLD_SEGMENT, HTML_DATA,
     else:
         with open(OUTPUT_GFF, "w") as gff_file:
             gff_file.write("{}\n".format(configuration.HEADER_GFF))
+
+    # TODO remove plotting, keep only basic report
+    return None
     seqs_all_part = seq_ids_all[0:configuration.MAX_PIC_NUM]
     graphs_dict = {}
     seqs_long = []
@@ -486,6 +493,9 @@ def repeats_process(OUTPUT_GFF, THRESHOLD, THRESHOLD_SEGMENT, HTML_DATA, CN,
     else:
         with open(OUTPUT_GFF, "w") as gff_file:
             gff_file.write("{}\n".format(configuration.HEADER_GFF))
+
+    # TODO remove plotting, keep only basic report
+    return None
     seqs_all_part = seq_ids_all[0:configuration.MAX_PIC_NUM]
     graphs_dict = {}
     seqs_long = []
@@ -740,7 +750,7 @@ def main(args):
     JBROWSE_BIN = args.jbrowse_bin
     DUST_FILTER = args.dust_filter
     LOG_FILE = args.log_file
-    JBROWSE_BIN = os.environ['JBROWSE_SOURCE_DIR']+"/bin"
+    #JBROWSE_BIN = os.environ['JBROWSE_SOURCE_DIR']+"/bin"
 	#if not JBROWSE_BIN: 
 	#	try:
 	#		JBROWSE_BIN = os.environ['JBROWSE_BIN']
@@ -916,7 +926,7 @@ def main(args):
                             files_dict)
         os.write(log, "ELAPSED_TIME_GFF_VIS = {} s\n".format(time.time(
         ) - t_gff_vis).encode("utf-8"))
-
+        os.fsync(log)
         # Prepare data for html output
         t_jbrowse = time.time()
         os.write(log, "JBrowse tracks are being prepared...\n".encode("utf-8"))

@@ -1,4 +1,4 @@
-<tool id="db_reducing" name="ProfRep Reducing" version="1.0.0">
+<tool id="profrep_db_reducing" name="cd-hit based size reduction of Profrep database" version="1.0.0">
 <description> Tool to reduce database of reads sequences based on their similarities to speed up ProfRep </description>
 <requirements>
     <requirement type="package" version="1.0.0">profrep</requirement>

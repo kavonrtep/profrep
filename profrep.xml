@@ -4,11 +4,18 @@
   </stdio>
   <description> Tool to identify and visualize general repetive profile of a sequence as well as assign repetitive regions to a class from database of repeats </description>
 <requirements>
+    <requirement type="package">blast</requirement>
+    <requirement type="package">last</requirement>
+    <requirement type="package">ucsc-wigtobigwig</requirement>
+    <requirement type="package">biopython</requirement>
+    <requirement type="package">numpy</requirement>
+    <requirement type="package">matplotlib</requirement>
     <requirement type="package">profrep</requirement>
-    <requirement type="package" version="1.11.6">jbrowse</requirement>
+    <requirement type="package" version="1.0">profrep_databases</requirement>
+    <requirement type="package" version="1.16.4">jbrowse</requirement>
 </requirements>
 <command>
-env > /home/petr/tmp/profreptest/env;
+env > /tmp/profrep_test_env;
 
 #if not $custom_data.options_custom_data:
 	profrep_reads=\$(awk -v var="${custom_data.prepared_dataset}" 'BEGIN{FS="\t"}{if ($1 == var) print $3}' $__tool_data_path__/profrep/prepared_datasets.txt) &amp;&amp;
@@ -19,13 +26,13 @@ env > /home/petr/tmp/profreptest/env;
 python3 ${__tool_directory__}/profrep.py --query ${input} --output_gff ${ProfGff} --html_file ${html_file}
 --html_path ${html_file.extra_files_path} --n_gff ${NGff} 
 --protein_domains ${dm.domains_switch}
---jbrowse_bin \${JBROWSE_BIN}
+--jbrowse_bin \${JBROWSE_SOURCE_DIR}/bin
 --log_file ${log_file}
 
  #if $dm.domains_switch:
 	--domain_gff ${DomGff}
-	--protein_database ${__tool_data_path__ }/protein_domains/${dm.db_type}_pdb
-	--classification ${__tool_data_path__ }/protein_domains/${dm.db_type}_class
+	--protein_database \${PROFREP_DATABASES}/protein_domains/${dm.db_type}_pdb
+	--classification \${__tool_data_path__ }/protein_domains/${dm.db_type}_class
  #end if
 
  #if $advanced_options.opts:  
